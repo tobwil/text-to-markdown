@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css">
+    <style>
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        select option {
+            display: block;
+        }
+        #editor h1, #editor h2, #editor h3, #editor h4, #editor h5, #editor h6 {
+            font-family: inherit;
+            font-weight: bold;
+        }
+        #editor ul, #editor ol {
+            list-style-position: inside;
+            padding-left: 1.25rem;
+        }
+        #editor ul {
+            list-style-type: disc;
+        }
+        #editor ol {
+            list-style-type: decimal;
+        }
+    </style>
+    <title>Simple HTML Text Editor</title>
+</head>
+<body class="bg-gray-100 h-screen relative">
+    <div class="bg-white p-4">
+        <div id="toolbar" class="flex space-x-2">
+            <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="document.execCommand('bold', false, null)">Bold</button>
+            <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="document.execCommand('italic', false, null)">Italic</button>
+            <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="document.execCommand('underline', false, null)">Underline</button>
+            <select id="headerSelect" onchange="document.execCommand('formatBlock', false, this.value)">
+                <option selected>- Header -</option>
+                <option value="h1">H1</option>
+                <option value="h2">H2</option>
+                <option value="h3">H3</option>
+                <option value="h4">H4</option>
+                <option value="h5">H5</option>
+                <option value="h6">H6</option>
+            </select>
+            <select id="fontSizeSelect" onchange="document.execCommand('fontSize', false, this.value)">
+                <option selected>- Font Size -</option>
+                <option value="1">Small</option>
+                <option value="3">Normal</option>
+                <option value="5">Large</option>
+            </select>
+            <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="document.execCommand('insertUnorderedList', false, null); document.getElementById('editor').focus();">Bullet Points</button>
+            <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="document.execCommand('insertOrderedList', false, null); document.getElementById('editor').focus();">Numbering</button>
+        </div>
+        <div id="editor" class="border border-gray-300 p-4 mt-2" contenteditable="true" style="min-height: 200px;"></div>
+        <button id="convertToMarkdown" class="bg-blue-500 text-white px-4 py-2 mt-2" onclick="convertToMarkdown()">Convert to Markdown</button>
+        <div id="spinner" class="spinner mt-2 hidden"></div>
+        <div id="markdownOutput" class="border border-gray-300 p-4 mt-2 hidden" style="white-space: pre-wrap;"></div>
+    </div>
+    <button class="bg-red-500 text-white px-4 py-2 mt-2 fixed right-0 top-0 m-4 rounded" onclick="clearAll()">Clear All</button>
+    <button class="bg-green-500 text-white px-4 py-2 mt-2 fixed right-32 top-0 m-4 rounded" onclick="copyToClipboard()">Copy to Clipboard</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.0.0/turndown.min.js"></script>
+    <script>
+        function clearAll() {
+            document.getElementById('editor').innerHTML = '';
+            document.getElementById('markdownOutput').innerHTML = '';
+        }
+
+        function copyToClipboard() {
+            const markdownOutput = document.getElementById("markdownOutput");
+            const textarea = document.createElement("textarea");
+            textarea.textContent = markdownOutput.innerText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+        }
+
+        function convertToMarkdown() {
+            const editorContent = document.getElementById("editor").innerHTML;
+            const turndownService = new TurndownService();
+            const markdown = turndownService.turndown(editorContent);
+
+            document.getElementById("markdownOutput").innerHTML = markdown;
+            document.getElementById("markdownOutput").classList.remove("hidden");
+        }
+
+        document.getElementById("headerSelect").addEventListener("change", function() {
+            document.getElementById("editor").focus();
+        });
+
+        document.getElementById("fontSizeSelect").addEventListener("change", function() {
+            document.getElementById("editor").focus();
+        });
+    </script>
+</body>
+</html>
